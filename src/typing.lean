@@ -175,70 +175,8 @@ end
 notation:40 "⊢" Γ:40 => Wf Γ
 notation:40 Γ:41 "⊢" a:41 "∶" A:41 => Wt Γ a A
 
-/-*------------------------------
-  Explicit induction principles
-------------------------------*-/
-
 def wtInd {motive} :=
   @Wt.rec _ (λ _ _ ↦ True) motive (by simp) (by simp)
-
-theorem wtfInd (Q : ∀ {Γ}, ⊢ Γ → Prop) (P : ∀ {Γ} {a A : Term}, Γ ⊢ a ∶ A → Prop)
-  (nil : Q Wf.nil)
-  (cons : ∀ {Γ A k}
-    (wf : ⊢ Γ)
-    (h : Γ ⊢ A ∶ 𝒰 k),
-    Q wf → P h → Q (Wf.cons wf h))
-  (var : ∀ {Γ x A}
-    (wf : ⊢ Γ)
-    (mem : Γ ∋ x ∶ A),
-    Q wf → P (Wt.var wf mem))
-  (𝒰 : ∀ {Γ j k}
-    (h : Γ ⊢ j ∶ lvl k),
-    P h → P (Wt.𝒰 h))
-  (pi : ∀ {Γ A B k}
-    (hA : Γ ⊢ A ∶ Term.𝒰 k)
-    (hB : Γ ∷ A ⊢ B ∶ Term.𝒰 (rename succ k)),
-    P hA → P hB → P (Wt.pi hA hB))
-  (abs : ∀ {Γ A B b k}
-    (hpi : Γ ⊢ Term.pi A B ∶ Term.𝒰 k)
-    (hA : Γ ⊢ A ∶ Term.𝒰 k)
-    (hb : Γ ∷ A ⊢ b ∶ B),
-    P hpi → P hA → P hb → P (Wt.abs hpi hA hb))
-  (app : ∀ {Γ A B b a}
-    (hb : Γ ⊢ b ∶ Term.pi A B)
-    (ha : Γ ⊢ a ∶ A),
-    P hb → P ha → P (Wt.app hb ha))
-  (mty : ∀ {Γ j k}
-    (h : Γ ⊢ Term.𝒰 j ∶ Term.𝒰 k),
-    P h → P (Wt.mty h))
-  (exf : ∀ {Γ A b k}
-    (hA : Γ ⊢ A ∶ Term.𝒰 k)
-    (hb : Γ ⊢ b ∶ Term.mty),
-    P hA → P hb → P (Wt.exf hA hb))
-  (lvl : ∀ {Γ a b j k}
-    (ha : Γ ⊢ a ∶ lvl b)
-    (hj : Γ ⊢ Term.𝒰 j ∶ Term.𝒰 k),
-    P ha → P hj → P (Wt.lvl ha hj))
-  (lof : ∀ {Γ j k}
-    (wf : ⊢ Γ)
-    (lt : j < k),
-    Q wf → P (Wt.lof wf lt))
-  (trans : ∀ {Γ i j k}
-    (hi : Γ ⊢ i ∶ Term.lvl j)
-    (hj : Γ ⊢ j ∶ Term.lvl k),
-    P hi → P hj → P (Wt.trans hi hj))
-  (conv : ∀ {Γ A B a k}
-    (e : A ≈ B)
-    (ha : Γ ⊢ a ∶ A)
-    (hB : Γ ⊢ B ∶ Term.𝒰 k),
-    P ha → P hB → P (Wt.conv e ha hB))
-  (sub : ∀ {Γ j k A}
-    (hj : Γ ⊢ j ∶ Term.lvl k)
-    (hA : Γ ⊢ A ∶ Term.𝒰 j),
-    P hj → P hA → P (Wt.sub hj hA))
-  : (∀ {Γ} (wf : ⊢ Γ), Q wf) ∧ (∀ {Γ} {a A : Term} (wt : Γ ⊢ a ∶ A), P wt) :=
-  ⟨by apply @Wf.rec _ @Q @P <;> assumption,
-   by apply @Wt.rec _ @Q @P <;> assumption⟩
 
 /-*---------------------------------------
   Better constructors + inversion lemmas

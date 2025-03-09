@@ -49,15 +49,12 @@ theorem semWfCons {Γ A k} (hΓ : ⊨ Γ) (hA : Γ ⊨ A ∶ 𝒰 k) : ⊨ Γ �
     exists rename succ k
     exact semWeaken (A := 𝒰 k) hB
 
-theorem soundness :
-  (∀ {Γ}, ⊢ Γ → ⊨ Γ) ∧
-  (∀ {Γ} {a A : Term}, Γ ⊢ a ∶ A → Γ ⊨ a ∶ A) := by
-  apply wtfInd <;> intros
+theorem soundness {Γ} {a A : Term} (h : Γ ⊢ a ∶ A) : Γ ⊨ a ∶ A := by
+  induction h using Wt.rec (motive_1 := λ Γ _ ↦ ⊨ Γ)
   case nil => intro x A mem; cases mem
   case cons k _ _ hΓ hA => exact semWfCons hΓ hA
   all_goals intro σ hσ
   case var x A wf mem h =>
-    simp at h
     unfold semWf at h
     unfold semSubst at hσ
     let ⟨k, ih⟩ := h x A mem
@@ -189,8 +186,7 @@ theorem soundness :
 -----------------------------------*-/
 
 theorem normalization {Γ} {a A : Term} (h : Γ ⊢ a ∶ A) : wnf a ∧ wnf A := by
-  let ⟨_, ih⟩ := soundness
-  let ⟨_, _, hA, ha⟩ := ih h var ?_
+  let ⟨_, _, hA, ha⟩ := soundness h var ?_
   . rw [substId] at ha hA
     let ⟨_, CRnf⟩ := adequacy hA a
     exact ⟨CRnf ha, interpsWnf hA⟩
