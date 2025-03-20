@@ -15,7 +15,7 @@ variable [LevelClass]
 theorem wtRename {ξ : ℕ → ℕ} {Γ Δ} {a A : Term}
   (hξ : Δ ⊢ ξ ∶ Γ) (hΔ : ⊢ Δ) (h : Γ ⊢ a ∶ A) :
   Δ ⊢ rename ξ a ∶ rename ξ A := by
-  induction h using wtInd generalizing ξ Δ
+  induction h generalizing ξ Δ
   case var => constructor; assumption; apply_rules [hξ]
   case 𝒰 ih => exact Wt.𝒰 (ih hξ hΔ)
   case pi ihA ihB =>
@@ -75,7 +75,7 @@ theorem wSubstCons {Γ} {a A : Term}
 theorem wtMorph {σ : ℕ → Term} {Γ Δ} {a A : Term}
   (hσ : Δ ⊢ σ ∶ Γ) (hΔ : ⊢ Δ) (h : Γ ⊢ a ∶ A) :
   Δ ⊢ subst σ a ∶ subst σ A := by
-  induction h using wtInd generalizing σ Δ
+  induction h generalizing σ Δ
   case var mem _ => exact hσ _ _ mem
   case 𝒰 ih => exact Wt.𝒰 (ih hσ hΔ)
   case pi ihA ihB =>
@@ -136,7 +136,7 @@ theorem wtMem {Γ x A} (mem : Γ ∋ x ∶ A) (h : ⊢ Γ) : ∃ k, Γ ⊢ A ∶
       exact ⟨rename succ k, wtWeaken hΓ hB hA⟩
 
 theorem wtRegularity {Γ} {a A : Term} (h : Γ ⊢ a ∶ A) : ∃ k, Γ ⊢ A ∶ 𝒰 k := by
-  induction h using wtInd
+  induction h
   case var wf mem _ => exact wtMem mem wf
   case pi ih _ | trans ih => exact ih
   case abs h _ _ _ _ _ | exf h _ _ _ | conv h _ _ => exact ⟨_, h⟩
@@ -174,7 +174,7 @@ theorem wtfAbs {Γ} {A B b k : Term}
 -------------*-/
 
 theorem wtPar {Γ} {a b A : Term} (r : a ⇒ b) (h : Γ ⊢ a ∶ A) : Γ ⊢ b ∶ A := by
-  induction h using wtInd generalizing b
+  induction h generalizing b
   case var => cases r; constructor <;> assumption
   case 𝒰 ih => cases r with | 𝒰 r' => exact Wt.𝒰 (ih r')
   case pi ihA ihB =>
@@ -274,7 +274,7 @@ theorem wtValue {Γ} {a A B : Term} (h : Γ ⊢ a ∶ A) (e : A ≈ B) : (v : Va
 
 theorem wtAbs {Γ} {b A B : Term} (v : Value b) (h : Γ ⊢ b ∶ pi A B) : ∃ a' b', b = abs a' b' := by
   generalize e : pi A B = T at h
-  induction h using wtInd
+  induction h
   all_goals try first | subst e | injection e
   case var | app | exf => contradiction
   case abs => exact ⟨_, _, rfl⟩
@@ -287,7 +287,7 @@ theorem wtAbs {Γ} {b A B : Term} (v : Value b) (h : Γ ⊢ b ∶ pi A B) : ∃ 
 
 theorem wtMty {Γ} {b : Term} (v : Value b) (h : Γ ⊢ b ∶ mty) : False := by
   generalize e : mty = T at h
-  induction h using wtInd
+  induction h
   all_goals try first | subst e | injection e
   case var | app | exf => contradiction
   case conv h v emty _ _ =>
@@ -299,7 +299,7 @@ theorem wtMty {Γ} {b : Term} (v : Value b) (h : Γ ⊢ b ∶ mty) : False := by
 
 theorem wtProgress {a A : Term} (h : ⬝ ⊢ a ∶ A) : Nonempty (Value a) ∨ ∃ b, a ⇒β b := by
   generalize e : (⬝) = Γ at h
-  induction h using wtInd
+  induction h
   all_goals subst e; specialize_rfls
   case var mem => cases mem
   case 𝒰 | pi | abs | mty | lvl | lof => repeat constructor

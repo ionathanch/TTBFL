@@ -9,7 +9,7 @@ set_option pp.fieldNotation false
 variable [lc : LevelClass]
 
 theorem soundness {Γ} {a A : Term} (h : Γ ⊢ a ∶ A) : Γ ⊨ a ∶ A := by
-  induction h using wtInd <;> intro σ hσ
+  induction h <;> intro σ hσ
   case var mem _ => exact hσ _ _ mem
   case pi ihA ihB =>
     let ⟨_, _, h𝒰, hA⟩ := ihA σ hσ
