@@ -167,6 +167,11 @@ theorem wnf𝒰 {b} (wnfb : wnf b) : wnf (𝒰 b) :=
   let ⟨c, nfc, rc⟩ := wnfb
   ⟨𝒰 c, nfc, pars𝒰 rc⟩
 
+theorem wne𝒰 {b} : wne (𝒰 b) → False
+  | ⟨_, neb, rb⟩ =>
+    let ⟨_, e, _⟩ := pars𝒰Inv rb
+    by subst e; simp at neb
+
 theorem wneExf {a b} (wnfa : wnf a) (wneb : wne b) : wne (exf a b) :=
   let ⟨a', nfa, ra⟩ := wnfa
   let ⟨b', neb, rb⟩ := wneb

@@ -63,7 +63,7 @@ theorem wSubstCons {Γ} {a A : Term}
   (h : Γ ⊢ a ∶ A) :
   Γ ⊢ a +: var ∶ Γ ∷ A := by
   intro x B mem; cases mem
-  all_goals rw [← substDrop]
+  all_goals rw [← substDropAll]
   . exact h
   . refine Wt.var (wtWf h) ?_; assumption
 

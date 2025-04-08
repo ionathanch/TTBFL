@@ -248,7 +248,12 @@ theorem renameDist ξ a s : subst (rename ξ a +: var) (rename (lift ξ) s) = re
     _ = subst (rename ξ ∘ (a +: var)) s        := by apply substExt; intro n; cases n <;> rfl
     _ = rename ξ (subst (a +: var) s)          := by rw [← renameSubst]
 
-theorem substDrop a b : b = subst (a +: var) (rename succ b) := by
+theorem substDrop σ a b : subst (a +: σ) (rename succ b) = subst σ b := by
+  calc
+    subst (a +: σ) (rename succ b)
+    _ = subst ((a +: σ) ∘ succ) b := by rw [substRename]
+
+theorem substDropAll a b : b = subst (a +: var) (rename succ b) := by
   calc
     b = subst var b                      := by rw [substId]
     _ = subst (a +: var) (rename succ b) := by rw [substRename]; rfl
@@ -257,7 +262,7 @@ theorem substUnion σ a s : subst (a +: σ) s = subst (a +: var) (subst (⇑ σ)
   calc
     subst (a +: σ) s
       = subst (subst (a +: var) ∘ (var 0 +: (rename succ ∘ σ))) s :=
-        by apply substExt; intro n; cases n <;> simp; rw [← substDrop]
+        by apply substExt; intro n; cases n <;> simp; rw [← substDropAll]
     _ = subst (a +: var) (subst (⇑ σ) s) :=
         by rw [← substComp]; rfl
 

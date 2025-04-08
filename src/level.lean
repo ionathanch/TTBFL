@@ -1,5 +1,5 @@
 import Mathlib.Order.RelClasses
-import Mathlib.Order.Max
+import Mathlib.Order.BoundedOrder
 
 set_option autoImplicit false
 set_option pp.fieldNotation false
@@ -12,19 +12,18 @@ set_option pp.fieldNotation false
   * Cofinality is needed since every type has a type
 ----------------------------------------------------------*-/
 
+class LevelClasses (L : Type)
+  extends Preorder L, OrderBot L, IsWellOrder L lt, NoMaxOrder L
+open LevelClasses
+
+instance {L : Type} [lc : LevelClasses L] : WellFoundedRelation L :=
+  lc.toWellFoundedRelation
+
 class LevelClass where
   L : Type
-  lt : LT L
-  wo : IsWellOrder L lt.lt
-  cf : NoMaxOrder L
-open LevelClass
+  lc : LevelClasses L
 
-attribute [instance] lt
-attribute [instance] wo
-attribute [instance] cf
-
-instance [LevelClass] : WellFoundedRelation L :=
-  wo.toWellFoundedRelation
+attribute [instance] LevelClass.lc
 
 /-*---------------------------------
   The naturals are suitable levels
@@ -36,9 +35,4 @@ instance instNoMaxOrderNat : NoMaxOrder Nat where
 @[simp]
 instance : LevelClass where
   L := Nat
-  lt := instLTNat
-  wo := Nat.lt.isWellOrder
-  cf := instNoMaxOrderNat
-
-instance (n : Nat) : OfNat L n where
-  ofNat := n
+  lc := { bot := 0, bot_le := λ _ ↦ by simp }
