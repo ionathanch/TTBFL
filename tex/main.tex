@@ -599,6 +599,38 @@ $ \kw{U} \gap   \mathit{ \ottmv{x} }  $ has type $ \kw{U} \gap   \omega  $ by \r
 and $\ottmv{y}$ can be assigned type $ \kw{U} \gap   \omega  $ transitively via \rref{Trans,Var}.
 Then the entire term has type $ \kw{U} \gap   \omega  $ by repeated application of \rref{Pi}.
 
+\iffalse
+\begin{mathpar}
+\inferrule*[Left=\rref*{Pi}]{
+  \inferrule*[Left=\rref*{Pi}]{
+    \inferrule*[Left=\rref*{Pi}]{
+      \inferrule*[Left=\rref*{Cumul}]{
+           \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega    ,  \ottmv{y}  \mathbin{:}   \kw{U} \gap   \mathit{ \ottmv{x} }     \vdash   \mathit{ \ottmv{y} }   \mathrel{:}   \kw{U} \gap   \mathit{ \ottmv{x} }   
+        \\\\
+           \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega    ,  \ottmv{y}  \mathbin{:}   \kw{U} \gap   \mathit{ \ottmv{x} }     \vdash   \mathit{ \ottmv{x} }   \mathrel{:}   \kw{Level}\texttt{<} \gap   \omega   
+      }{
+           \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega    ,  \ottmv{y}  \mathbin{:}   \kw{U} \gap   \mathit{ \ottmv{x} }     \vdash   \mathit{ \ottmv{y} }   \mathrel{:}   \kw{U} \gap   \omega   
+      }
+    }{
+         \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega    ,  \ottmv{y}  \mathbin{:}   \kw{U} \gap   \mathit{ \ottmv{x} }     \vdash    \mathit{ \ottmv{y} }   \to   \mathit{ \ottmv{y} }    \mathrel{:}   \kw{U} \gap   \omega   
+    }
+    \and
+    \inferrule*[Right=\rref*{Univ}]{
+        \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega     \vdash   \mathit{ \ottmv{x} }   \mathrel{:}   \kw{Level}\texttt{<} \gap   \omega   
+    }{
+        \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega     \vdash   \kw{U} \gap   \mathit{ \ottmv{x} }    \mathrel{:}   \kw{U} \gap   \omega   
+    }
+  }{
+      \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega     \vdash    \Pi  \ottmv{y}  \mathbin{:}   \kw{U} \gap   \mathit{ \ottmv{x} }    \mathpunct{.}   \mathit{ \ottmv{y} }    \to   \mathit{ \ottmv{y} }    \mathrel{:}   \kw{U} \gap   \omega   
+  }
+  \and
+  \inferrule*[Right=\rref*{Level}]{\dots}{  \cdot   \vdash   \kw{Level}\texttt{<} \gap   \omega    \mathrel{:}   \kw{U} \gap   \omega   }
+}{
+    \cdot   \vdash    \Pi  \ottmv{x}  \mathbin{:}   \kw{Level}\texttt{<} \gap   \omega    \mathpunct{.}   \Pi  \ottmv{y}  \mathbin{:}   \kw{U} \gap   \mathit{ \ottmv{x} }    \mathpunct{.}   \mathit{ \ottmv{y} }     \to   \mathit{ \ottmv{y} }    \mathrel{:}   \kw{U} \gap   \omega   
+}
+\end{mathpar}
+\fi
+
 \section{Type safety} \label{sec:safety}
 
 Type safety is proven using standard syntactic methods
@@ -1479,16 +1511,18 @@ we obtain weak normalization of well typed terms and their types.
 \begin{mathpar}
   \inferrule[\ottdrulename{I'-Ne}]{~}{ \mathopen{\llbracket}  \ottnt{E}  \mathclose{\rrbracket}_{ \ottmv{i} } \searrow   \lbrace  \ottmv{z}  \mid   \mathbf{wne} \gap   \mathit{ \ottmv{z} }    \rbrace  }
   \and
-  %\inferrule[\ottdrulename{I'-Mty}]{~}
-  %  { \mathopen{\llbracket}   \bot   \mathclose{\rrbracket}_{ \ottmv{i} } \searrow   \lbrace  \ottmv{z}  \mid   \mathbf{wne} \gap   \mathit{ \ottmv{z} }    \rbrace  }
-  %\and
+  \inferrule[\ottdrulename{I'-Mty}]{~}
+    { \mathopen{\llbracket}   \bot   \mathclose{\rrbracket}_{ \ottmv{i} } \searrow   \lbrace  \ottmv{z}  \mid   \mathbf{wne} \gap   \mathit{ \ottmv{z} }    \rbrace  }
+  \and
   \inferrule[\ottdrulename{I'-Level<}]{~}
     { \mathopen{\llbracket}   \kw{Level}\texttt{<} \gap  \ottnt{n}   \mathclose{\rrbracket}_{ \ottmv{i} } \searrow   \lbrace  \ottmv{z}  \mid    \mathbf{wne} \gap   \mathit{ \ottmv{z} }    \vee   (    \exists  \ottmv{j_{{\mathrm{1}}}}  \mathpunct{.}   \exists  \ottmv{j_{{\mathrm{2}}}}  \mathpunct{.}   \ottnt{n}  \Rightarrow^\ast   \ottmv{j_{{\mathrm{1}}}}      \wedge    \mathit{ \ottmv{z} }   \Rightarrow^\ast   \ottmv{j_{{\mathrm{2}}}}     \wedge   \ottmv{j_{{\mathrm{2}}}}  <  \ottmv{j_{{\mathrm{1}}}}   )    \rbrace  }
-  % \and
-  % \inferrule[\ottdrulename{I'-Univ}]
-  %   { \ottmv{j}  <  \ottmv{i} }
-  %   %---------------------------------------%
-  % { \mathopen{\llbracket}   \kw{U} \gap   \ottmv{j}    \mathclose{\rrbracket}_{ \ottmv{i} } \searrow   \lbrace  \ottmv{z}  \mid   \exists  \ottnt{P}  \mathpunct{.}   \mathopen{\llbracket}   \mathit{ \ottmv{z} }   \mathclose{\rrbracket}_{ \ottmv{j} } \searrow  \ottnt{P}    \rbrace  }
+  \and
+  \inferrule[\ottdrulename{I'-Univ}]
+    { \ottmv{j}  <  \ottmv{i} }
+    %---------------------------------------%
+    { \mathopen{\llbracket}   \kw{U} \gap   \ottmv{j}    \mathclose{\rrbracket}_{ \ottmv{i} } \searrow   \lbrace  \ottmv{z}  \mid   \exists  \ottnt{P}  \mathpunct{.}   \mathopen{\llbracket}   \mathit{ \ottmv{z} }   \mathclose{\rrbracket}_{ \ottmv{j} } \searrow  \ottnt{P}    \rbrace  }
+  \and
+  \inferrule[\ottdrulename{I'-UnivNe}]{~}{ \mathopen{\llbracket}   \kw{U} \gap  \ottnt{e}   \mathclose{\rrbracket}_{ \ottmv{i} } \searrow   \lbrace  \ottmv{z}  \mid   \mathbf{wne} \gap   \mathit{ \ottmv{z} }    \rbrace  }
 \end{mathpar}
 \caption{Logical relation for open types (excerpt)}
 \label{fig:lr:open}

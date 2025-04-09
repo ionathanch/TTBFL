@@ -1,13 +1,16 @@
 \newif\ifarxiv
-\arxivtrue
+\arxivfalse
 
 \documentclass[a4paper,UKenglish,cleveref,autoref,thm-restate]{lipics-v2021}
 
 \ifarxiv
 \pdfoutput=1
+\nolinenumbers
 \usepackage[T1]{fontenc}
+\usepackage[scale=0.92]{inconsolata}
 \else
 \usepackage{fontspec}
+\setmonofont[Scale=MatchLowercase]{inconsolata}
 \fi
 
 \usepackage[supertabular]{ottalt}
@@ -16,8 +19,6 @@
 \usepackage{enumitem,booktabs,xspace,doi}
 \usepackage{mathpartir,mathtools,stmaryrd}
 \usepackage[bottom,flushmargin,multiple,para]{footmisc} % para spacing is weird and ugly
-\usepackage[scale=0.92]{inconsolata}
-% \setmonofont[Scale=MatchUppercase]{sgr-iosevka-fixed-regular.ttc}
 
 \newcommand{\citep}[1]{\cite{#1}}
 \newcommand{\citet}[1]{\cite{#1}}
@@ -597,6 +598,38 @@ $[[Level< o]]$ can be assigned an arbitrary type by \rref{Level},
 $[[Type x]]$ has type $[[Type o]]$ by \rref{Univ} and \rref{Var},
 and $[[y]]$ can be assigned type $[[Type o]]$ transitively via \rref{Trans,Var}.
 Then the entire term has type $[[Type o]]$ by repeated application of \rref{Pi}.
+
+\iffalse
+\begin{mathpar}
+\inferrule*[Left=\rref*{Pi}]{
+  \inferrule*[Left=\rref*{Pi}]{
+    \inferrule*[Left=\rref*{Pi}]{
+      \inferrule*[Left=\rref*{Cumul}]{
+        [[x : Level< o, y : Type x ⊢ y : Type x]]
+        \\\\
+        [[x : Level< o, y : Type x ⊢ x : Level< o]]
+      }{
+        [[x : Level< o, y : Type x ⊢ y : Type o]]
+      }
+    }{
+      [[x : Level< o, y : Type x ⊢ y → y : Type o]]
+    }
+    \and
+    \inferrule*[Right=\rref*{Univ}]{
+      [[x : Level< o ⊢ x : Level< o]]
+    }{
+      [[x : Level< o ⊢ Type x : Type o]]
+    }
+  }{
+    [[x : Level< o ⊢ Πy : Type x. y → y : Type o]]
+  }
+  \and
+  \inferrule*[Right=\rref*{Level}]{\dots}{[[• ⊢ Level< o : Type o]]}
+}{
+  [[• ⊢ Πx : Level< o. Πy : Type x. y → y : Type o]]
+}
+\end{mathpar}
+\fi
 
 \section{Type safety} \label{sec:safety}
 
@@ -1478,16 +1511,18 @@ we obtain weak normalization of well typed terms and their types.
 \begin{mathpar}
   \inferrule[\ottdrulename{I'-Ne}]{~}{[[⟦E⟧ i ↘ {z | wne z}]]}
   \and
-  %\inferrule[\ottdrulename{I'-Mty}]{~}
-  %  {[[⟦ ⊥ ⟧ i ↘ {z | wne z}]]}
-  %\and
+  \inferrule[\ottdrulename{I'-Mty}]{~}
+    {[[⟦ ⊥ ⟧ i ↘ {z | wne z}]]}
+  \and
   \inferrule[\ottdrulename{I'-Level<}]{~}
     {[[⟦ Level< n ⟧ i ↘ {z | wne z ∨ (∃ j1. ∃ j2. n ⇒* j1 ∧ z ⇒* j2 ∧ j2 < j1)}]]}
-  % \and
-  % \inferrule[\ottdrulename{I'-Univ}]
-  %   {[[j < i]]}
-  %   %---------------------------------------%
-  % {[[⟦ Type j ⟧ i ↘ {z | ∃ P. ⟦ z ⟧ j ↘ P}]]}
+  \and
+  \inferrule[\ottdrulename{I'-Univ}]
+    {[[j < i]]}
+    %---------------------------------------%
+    {[[⟦ Type j ⟧ i ↘ {z | ∃ P. ⟦ z ⟧ j ↘ P}]]}
+  \and
+  \inferrule[\ottdrulename{I'-UnivNe}]{~}{[[⟦ Type e ⟧ i ↘ {z | wne z}]]}
 \end{mathpar}
 \caption{Logical relation for open types (excerpt)}
 \label{fig:lr:open}
