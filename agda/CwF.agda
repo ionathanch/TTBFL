@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical #-}
+{-# OPTIONS --lossy-unification --cubical #-}
 
 import Acc
 open import Data.Empty
@@ -48,7 +48,6 @@ el k = el' k (U< (wf k))
 
 U≡ : ∀ {j k} (acck : Acc k) (j<k : j < k) → U j ≡ U< acck j<k
 U≡ {j} {k} acck j<k i
-  with acc< f ← wf k
   with acc< g ← acck
   = U' j (U< (accProp (wf j) (g j<k) i))
 
@@ -60,7 +59,10 @@ lift _ ⊥̂ = ⊥̂
 lift j<k (Π̂ A B) = Π̂ (lift j<k A) (λ a → lift j<k (B (transport (sym (el≡ j<k A)) a)))
 lift _ (L̂ ℓ) = L̂ ℓ
 
-el≡ j<k (Û i i<j) = refl
+el≡ {j} {k} j<k (Û i i<j) ii
+  with acc< f ← wf j
+  with acc< g ← wf k
+  = U' i (U< (accProp (f i<j) (g (trans< i<j j<k)) ii))
 el≡ _ ⊥̂ = refl
 el≡ j<k (Π̂ A B) i = (a : el≡ j<k A i) → el≡ j<k (B (transp (λ j → el≡ j<k A (i ∧ ~ j)) (~ i) a)) i
 el≡ _ (L̂ _) = refl
@@ -115,27 +117,29 @@ _[_]ᵀ : ∀ {Γ Δ} {ℓ : Lvl Δ} → Ty Δ ℓ → (σ : Γ ⇒ Δ) → Ty �
 _[_]ᵗ : ∀ {Γ Δ} {ℓ : Lvl Δ} {A : Ty Δ ℓ} → Tm Δ ℓ A → (σ : Γ ⇒ Δ) → Tm Γ (ℓ [ σ ]ᴸ) (A [ σ ]ᵀ)
 (a [ σ ]ᵗ) γ = a (σ γ)
 
-wkᴸ : ∀ {Γ k} (A : Ty Γ k) → Lvl Γ → Lvl (cons Γ k A)
+variable Γ : Ctxt
+
+wkᴸ : ∀ {k} (A : Ty Γ k) → Lvl Γ → Lvl (cons Γ k A)
 wkᴸ A ℓ (γ , _) = ℓ γ
 
-wkᵀ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl Γ} → Ty Γ ℓ → Ty (cons Γ k A) (wkᴸ A ℓ)
+wkᵀ : ∀ {k} (A : Ty Γ k) {ℓ : Lvl Γ} → Ty Γ ℓ → Ty (cons Γ k A) (wkᴸ A ℓ)
 wkᵀ A B (γ , _) = B γ
 
-wkᵗ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl Γ} {B : Ty Γ ℓ} → Tm Γ ℓ B → Tm (cons Γ k A) (wkᴸ A ℓ) (wkᵀ A B)
+wkᵗ : ∀ {k} (A : Ty Γ k) {ℓ : Lvl Γ} {B : Ty Γ ℓ} → Tm Γ ℓ B → Tm (cons Γ k A) (wkᴸ A ℓ) (wkᵀ A B)
 wkᵗ A a (γ , _) = a γ
 
-var : ∀ {Γ k} (A : Ty Γ k) → Tm (cons Γ k A) (wkᴸ A k) (wkᵀ A A)
+var : ∀ {k} (A : Ty Γ k) → Tm (cons Γ k A) (wkᴸ A k) (wkᵀ A A)
 var A (_ , a) = a
 
-substᴸ : ∀ {Γ k} (A : Ty Γ k) → Lvl (cons Γ k A) → (a : Tm Γ k A) → Lvl Γ
+substᴸ : ∀ {k} (A : Ty Γ k) → Lvl (cons Γ k A) → (a : Tm Γ k A) → Lvl Γ
 substᴸ A ℓ a γ = ℓ (γ , a γ)
 syntax substᴸ A ℓ a = ℓ ⟨ a ∈ A ⟩ᴸ
 
-substᵀ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl (cons Γ k A)} → Ty (cons Γ k A) ℓ → (a : Tm Γ k A) → Ty Γ (ℓ ⟨ a ∈ A ⟩ᴸ)
+substᵀ : ∀ {k} (A : Ty Γ k) {ℓ : Lvl (cons Γ k A)} → Ty (cons Γ k A) ℓ → (a : Tm Γ k A) → Ty Γ (ℓ ⟨ a ∈ A ⟩ᴸ)
 substᵀ A B a γ = B (γ , a γ)
 syntax substᵀ A B a = B ⟨ a ∈ A ⟩ᵀ
 
-substᵗ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl (cons Γ k A)} (B : Ty (cons Γ k A) ℓ) → Tm (cons Γ k A) ℓ B → (a : Tm Γ k A) → Tm Γ (ℓ ⟨ a ∈ A ⟩ᴸ) (B ⟨ a ∈ A ⟩ᵀ)
+substᵗ : ∀ {k} (A : Ty Γ k) {ℓ : Lvl (cons Γ k A)} (B : Ty (cons Γ k A) ℓ) → Tm (cons Γ k A) ℓ B → (a : Tm Γ k A) → Tm Γ (ℓ ⟨ a ∈ A ⟩ᴸ) (B ⟨ a ∈ A ⟩ᵀ)
 substᵗ A B b a γ = b (γ , a γ)
 syntax substᵗ A B b a = b ∈ B ⟨ a ∈ A ⟩ᵗ
 
@@ -143,35 +147,35 @@ syntax substᵗ A B b a = b ∈ B ⟨ a ∈ A ⟩ᵗ
   Level rules
 --------------}
 
-Level< : ∀ {Γ ℓ} → (k : Lvl Γ) → Ty Γ ℓ
+Level< : ∀ {ℓ} → (k : Lvl Γ) → Ty Γ ℓ
 Level< k γ = L̂ (k γ)
 
-unlvl : ∀ {Γ k ℓ} → Tm Γ ℓ (Level< k) → Σ[ j ∈ Lvl Γ ] Lt j k
-unlvl {Γ} {k} {ℓ} j = (λ γ → let (j' , _) = j γ in j') , (λ γ → let (_ , j<k) = j γ in j<k)
+unlvl : ∀ {k ℓ} → Tm Γ ℓ (Level< k) → Σ[ j ∈ Lvl Γ ] Lt j k
+unlvl j = (λ γ → let (j' , _) = j γ in j') , (λ γ → let (_ , j<k) = j γ in j<k)
 
-unlvl₁ : ∀ {Γ k ℓ} → Tm Γ ℓ (Level< k) → Lvl Γ
-unlvl₁ {ℓ = ℓ} j = unlvl {ℓ = ℓ} j .fst
+unlvl₁ : ∀ {k ℓ} → Tm Γ ℓ (Level< k) → Lvl Γ
+unlvl₁ j = unlvl j .fst
 
-unlvl₂ : ∀ {Γ k ℓ} (j : Tm Γ ℓ (Level< k)) → Lt (unlvl₁ {ℓ = ℓ} j) k
-unlvl₂ {ℓ = ℓ} j = unlvl {ℓ = ℓ} j .snd
+unlvl₂ : ∀ {k ℓ} (j : Tm Γ ℓ (Level< k)) → Lt (unlvl₁ j) k
+unlvl₂ j = unlvl j .snd
 
 -- rule Level<
-Level<' : ∀ {Γ k ℓ} → (j : Tm Γ ℓ (Level< k)) → Ty Γ ℓ
-Level<' {k = k} {ℓ = ℓ} j = Level< (unlvl₁ {ℓ = k} j)
+Level<' : ∀ {k ℓ} → (j : Tm Γ ℓ (Level< k)) → Ty Γ ℓ
+Level<' j = Level< (unlvl₁ j)
 
-lvl : ∀ {Γ k ℓ} (j : Lvl Γ) → Lt j k → Tm Γ ℓ (Level< k)
+lvl : ∀ {k ℓ} (j : Lvl Γ) → Lt j k → Tm Γ ℓ (Level< k)
 lvl j j<k γ = j γ , j<k γ
 
 -- rule Lvl
-lvl' : ∀ {Γ j k ℓ} → j < k → Tm Γ ℓ (Level< (λ _ → k))
-lvl' {j = j} {ℓ = ℓ} j<k = lvl {ℓ = ℓ} (λ _ → j) (λ _ → j<k)
+lvl' : ∀ {j k ℓ} → j < k → Tm Γ ℓ (Level< (λ _ → k))
+lvl' {j = j} j<k = lvl (λ _ → j) (λ _ → j<k)
 
 -- rule Trans
-trans : ∀ {Γ ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ {ℓ = k'} k))) → Tm Γ k' (Level< ℓ)
-trans {Γ} {ℓ} k j γ = unlvl₁ {ℓ = ℓ} j γ , trans< (unlvl₂ {ℓ = ℓ} j γ) (unlvl₂ {ℓ = ℓ} k γ)
+trans : ∀ {ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ k))) → Tm Γ k' (Level< ℓ)
+trans k j γ = unlvl₁ j γ , trans< (unlvl₂ j γ) (unlvl₂ k γ)
 
-trans≡ : ∀ {Γ ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ {ℓ = k'} k))) →
-  unlvl₁ {ℓ = j'} j ≡ unlvl₁ {ℓ = k'} (trans {k' = k'} {j' = j'} k j)
+trans≡ : ∀ {ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ k))) →
+  unlvl₁ j ≡ unlvl₁ (trans k j)
 trans≡ k j = refl
 
 {-----------------
@@ -179,18 +183,18 @@ trans≡ k j = refl
 -----------------}
 
 -- rule Univ
-Univ : ∀ {Γ k ℓ} → Tm Γ ℓ (Level< k) → Ty Γ k
-Univ {ℓ = ℓ} j γ with (j' , j<k) ← j γ = Û j' j<k
+Univ : ∀ {k ℓ} → Tm Γ ℓ (Level< k) → Ty Γ k
+Univ j γ with (j' , j<k) ← j γ = Û j' j<k
 
-russell : ∀ {Γ k ℓ} (j : Tm Γ ℓ (Level< k)) → Tm Γ k (Univ {ℓ = ℓ} j) ≡ Ty Γ (unlvl₁ {ℓ = ℓ} j)
-russell {Γ} {k} {ℓ} j i = (γ : em Γ) → U≡ (wf (k γ)) (unlvl₂ {ℓ = ℓ} j γ) (~ i)
+russell : ∀ {k ℓ} (j : Tm Γ ℓ (Level< k)) → Tm Γ k (Univ j) ≡ Ty Γ (unlvl₁ j)
+russell {Γ} {k} j i = (γ : em Γ) → U≡ (wf (k γ)) (unlvl₂ j γ) (~ i)
 
 -- rule Cumul
-cumul : ∀ {Γ k ℓ} (j : Tm Γ ℓ (Level< k)) → Ty Γ (unlvl₁ {ℓ = ℓ} j) → Ty Γ k
-cumul {ℓ = ℓ} j A = liftTy (unlvl₂ {ℓ = ℓ} j) A
+cumul : ∀ {k ℓ} (j : Tm Γ ℓ (Level< k)) → Ty Γ (unlvl₁ j) → Ty Γ k
+cumul j A = liftTy (unlvl₂ j) A
 
-cumul≡ : ∀ {Γ k ℓ} (j : Tm Γ ℓ (Level< k)) (A : Ty Γ (unlvl₁ {ℓ = ℓ} j)) → Tm Γ _ A ≡ Tm Γ _ (cumul {ℓ = ℓ} j A)
-cumul≡ {ℓ = ℓ} j A = liftTm (unlvl₂ {ℓ = ℓ} j) A
+cumul≡ : ∀ {k ℓ} (j : Tm Γ ℓ (Level< k)) (A : Ty Γ (unlvl₁ j)) → Tm Γ _ A ≡ Tm Γ _ (cumul j A)
+cumul≡ j A = liftTm (unlvl₂ j) A
 
 {------------------------------------------
   It seems like this needs to hold:
@@ -201,8 +205,8 @@ cumul≡ {ℓ = ℓ} j A = liftTm (unlvl₂ {ℓ = ℓ} j) A
   Γ ⊢ cumul k (U j) ≡ U (trans j k) : U ℓ
 ------------------------------------------}
 
-cumulTrans : ∀ {Γ ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ {ℓ = k'} k))) →
-  cumul {ℓ = k'} k (Univ {ℓ = j'} j) ≡ Univ {ℓ = k'} (trans {k' = k'} {j' = j'} k j)
+cumulTrans : ∀ {ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ k))) →
+  cumul k (Univ j) ≡ Univ (trans k j)
 cumulTrans k j = refl
 
 {--------------
@@ -210,11 +214,11 @@ cumulTrans k j = refl
 --------------}
 
 -- rule Mty
-Bot : ∀ {Γ k} → Ty Γ k
+Bot : ∀ {k} → Ty Γ k
 Bot γ = ⊥̂
 
 -- rule Abs
-absurd : ∀ {Γ k ℓ} (A : Ty Γ k) → Tm Γ ℓ Bot → Tm Γ k A
+absurd : ∀ {k ℓ} (A : Ty Γ k) → Tm Γ ℓ Bot → Tm Γ k A
 absurd A b γ with () ← b γ
 
 {-----------------
@@ -222,21 +226,21 @@ absurd A b γ with () ← b γ
 -----------------}
 
 -- rule Pi
-Pi : ∀ {Γ} {k : Lvl Γ} → (A : Ty Γ k) → Ty (cons Γ k A) (wkᴸ A k) → Ty Γ k
+Pi : ∀ {k : Lvl Γ} → (A : Ty Γ k) → Ty (cons Γ k A) (wkᴸ A k) → Ty Γ k
 Pi A B γ = Π̂ (A γ) (λ a → B (γ , a))
 
 -- rule Lam
-lam : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
+lam : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
   Tm (cons Γ k A) (wkᴸ A k) B → Tm Γ k (Pi A B)
 lam A B b γ a = b (γ , a)
 
 -- rule App
-app : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
+app : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
   Tm Γ k (Pi A B) → (a : Tm Γ k A) → Tm Γ k (B ⟨ a ∈ A ⟩ᵀ)
 app A B b a γ = b γ (a γ)
 
 -- rule E-Beta
-β : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k))
+β : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k))
   (a : Tm Γ k A) (b : Tm (cons Γ k A) (wkᴸ A k) B) →
   app A B (lam A B b) a ≡ b ∈ B ⟨ a ∈ A ⟩ᵗ
 β A B a b = refl
