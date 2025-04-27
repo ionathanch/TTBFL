@@ -122,8 +122,14 @@ variable Γ : Ctxt
 ⟨_⟩ : ∀ {ℓ A} → Tm Γ ℓ A → Γ ⇒ cons Γ ℓ A
 ⟨ a ⟩ γ = γ , a γ
 
-wkᴸ : ∀ {k A} → Lvl Γ → Lvl (cons Γ k A)
-wkᴸ ℓ = ℓ [ fst ]ᴸ
+wkᴸ : ∀ {ℓ A} → Lvl Γ → Lvl (cons Γ ℓ A)
+wkᴸ k = k [ fst ]ᴸ
+
+wkᵀ : ∀ {ℓ A k} → Ty Γ k → Ty (cons Γ ℓ A) (wkᴸ k)
+wkᵀ A = A [ fst ]ᵀ
+
+var : ∀ {ℓ A} → Tm (cons Γ ℓ A) (wkᴸ ℓ) (wkᵀ A)
+var (_ , a) = a
 
 {--------------
   Level rules
@@ -226,3 +232,11 @@ app A B b a γ = b γ (a γ)
   (a : Tm Γ k A) (b : Tm (cons Γ k A) (wkᴸ k) B) →
   app A B (lam A B b) a ≡ b [ ⟨ a ⟩ ]ᵗ
 β A B a b = refl
+
+{--------------------------------------------------
+  Every level k an inconsistent context Γ = x : ⊥
+  has a strictly smaller level j
+--------------------------------------------------}
+
+nwf : ∀ {ℓ} → let Γ = cons nil ℓ Bot in (k : Lvl Γ) → ∃[ j ] Lt j k
+nwf {ℓ} k = unlvl {ℓ = wkᴸ ℓ} (absurd (Level< k) var)
