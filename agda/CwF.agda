@@ -155,14 +155,14 @@ unlvl₁ {ℓ = ℓ} j = unlvl {ℓ = ℓ} j .fst
 unlvl₂ : ∀ {Γ k ℓ} (j : Tm Γ ℓ (Level< k)) → Lt (unlvl₁ {ℓ = ℓ} j) k
 unlvl₂ {ℓ = ℓ} j = unlvl {ℓ = ℓ} j .snd
 
--- rule Level< (type former)
+-- rule Level<
 Level<' : ∀ {Γ k ℓ} → (j : Tm Γ ℓ (Level< k)) → Ty Γ ℓ
 Level<' {k = k} {ℓ = ℓ} j = Level< (unlvl₁ {ℓ = k} j)
 
 lvl : ∀ {Γ k ℓ} (j : Lvl Γ) → Lt j k → Tm Γ ℓ (Level< k)
 lvl j j<k γ = j γ , j<k γ
 
--- rule Lvl (constructor)
+-- rule Lvl
 lvl' : ∀ {Γ j k ℓ} → j < k → Tm Γ ℓ (Level< (λ _ → k))
 lvl' {j = j} {ℓ = ℓ} j<k = lvl {ℓ = ℓ} (λ _ → j) (λ _ → j<k)
 
@@ -192,13 +192,28 @@ cumul {ℓ = ℓ} j A = liftTy (unlvl₂ {ℓ = ℓ} j) A
 cumul≡ : ∀ {Γ k ℓ} (j : Tm Γ ℓ (Level< k)) (A : Ty Γ (unlvl₁ {ℓ = ℓ} j)) → Tm Γ _ A ≡ Tm Γ _ (cumul {ℓ = ℓ} j A)
 cumul≡ {ℓ = ℓ} j A = liftTm (unlvl₂ {ℓ = ℓ} j) A
 
+{------------------------------------------
+  It seems like this needs to hold:
+
+  Γ ⊢ j : Level< k
+  Γ ⊢ k : Level< ℓ
+  ---------------------------------------
+  Γ ⊢ cumul k (U j) ≡ U (trans j k) : U ℓ
+------------------------------------------}
+
+cumulTrans : ∀ {Γ ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ {ℓ = k'} k))) →
+  cumul {ℓ = k'} k (Univ {ℓ = j'} j) ≡ Univ {ℓ = k'} (trans {k' = k'} {j' = j'} k j)
+cumulTrans k j = refl
+
 {--------------
   Empty rules
 --------------}
 
+-- rule Mty
 Bot : ∀ {Γ k} → Ty Γ k
 Bot γ = ⊥̂
 
+-- rule Abs
 absurd : ∀ {Γ k ℓ} (A : Ty Γ k) → Tm Γ ℓ Bot → Tm Γ k A
 absurd A b γ with () ← b γ
 
@@ -206,17 +221,21 @@ absurd A b γ with () ← b γ
   Function rules
 -----------------}
 
+-- rule Pi
 Pi : ∀ {Γ} {k : Lvl Γ} → (A : Ty Γ k) → Ty (cons Γ k A) (wkᴸ A k) → Ty Γ k
 Pi A B γ = Π̂ (A γ) (λ a → B (γ , a))
 
+-- rule Lam
 lam : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
   Tm (cons Γ k A) (wkᴸ A k) B → Tm Γ k (Pi A B)
 lam A B b γ a = b (γ , a)
 
+-- rule App
 app : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
   Tm Γ k (Pi A B) → (a : Tm Γ k A) → Tm Γ k (B ⟨ a ∈ A ⟩ᵀ)
 app A B b a γ = b γ (a γ)
 
+-- rule E-Beta
 β : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k))
   (a : Tm Γ k A) (b : Tm (cons Γ k A) (wkᴸ A k) B) →
   app A B (lam A B b) a ≡ b ∈ B ⟨ a ∈ A ⟩ᵗ
