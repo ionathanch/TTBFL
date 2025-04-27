@@ -105,6 +105,12 @@ liftTm {Γ} j<k A i = (γ : em Γ) → el≡ (j<k γ) (A γ) i
 _⇒_ : Ctxt → Ctxt → Set
 Γ ⇒ Δ = em Γ → em Δ
 
+wk : ∀ {Γ ℓ A} → cons Γ ℓ A ⇒ Γ
+wk (γ , _) = γ
+
+⟨_⟩ : ∀ {Γ ℓ A} → Tm Γ ℓ A → Γ ⇒ cons Γ ℓ A
+⟨ a ⟩ γ = (γ , a γ)
+
 _[_]ᴸ : ∀ {Γ Δ} → Lvl Δ → Γ ⇒ Δ → Lvl Γ
 (ℓ [ σ ]ᴸ) γ = ℓ (σ γ)
 
@@ -143,10 +149,7 @@ lvl' {j = j} {ℓ = ℓ} j<k = lvl {ℓ = ℓ} (λ _ → j) (λ _ → j<k)
 
 -- rule Trans
 trans : ∀ {Γ ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ {ℓ = k'} k))) → Tm Γ k' (Level< ℓ)
-trans k j γ
-  with j' , j<k ← j γ
-  with k' , k<ℓ ← k γ
-  = j' , trans< j<k k<ℓ
+trans {Γ} {ℓ} k j γ = unlvl₁ {ℓ = ℓ} j γ , trans< (unlvl₂ {ℓ = ℓ} j γ) (unlvl₂ {ℓ = ℓ} k γ)
 
 trans≡ : ∀ {Γ ℓ k' j'} (k : Tm Γ k' (Level< ℓ)) (j : Tm Γ j' (Level< (unlvl₁ {ℓ = k'} k))) →
   unlvl₁ {ℓ = j'} j ≡ unlvl₁ {ℓ = k'} (trans {k' = k'} {j' = j'} k j)
@@ -183,3 +186,14 @@ absurd A b γ with () ← b γ
 {-----------------
   Function rules
 -----------------}
+
+Pi : ∀ {Γ k} → (A : Ty Γ k) → Ty (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ) → Ty Γ k
+Pi A B γ = Π̂ (A γ) (λ a → B (γ , a))
+
+lam : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ)) →
+  Tm (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ) B → Tm Γ k (Pi A B)
+lam A B b γ a = b (γ , a)
+
+app : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ)) →
+  Tm Γ k (Pi A B) → (a : Tm Γ k A) → Tm Γ k (B [ ⟨ a ⟩ ]ᵀ)
+app A B b a γ = b γ (a γ)
