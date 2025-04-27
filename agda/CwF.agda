@@ -98,18 +98,13 @@ liftTy j<k A γ = lift (j<k γ) (A γ)
 liftTm : ∀ {Γ} {j k : Lvl Γ} (j<k : Lt j k) (A : Ty Γ j) → Tm Γ j A ≡ Tm Γ k (liftTy j<k A)
 liftTm {Γ} j<k A i = (γ : em Γ) → el≡ (j<k γ) (A γ) i
 
-{----------------
-  Substitutions
-----------------}
+{-----------------------------------------
+  Substitutions, with special syntax
+  for weakening and single substitutions
+-----------------------------------------}
 
 _⇒_ : Ctxt → Ctxt → Set
 Γ ⇒ Δ = em Γ → em Δ
-
-wk : ∀ {Γ ℓ A} → cons Γ ℓ A ⇒ Γ
-wk (γ , _) = γ
-
-⟨_⟩ : ∀ {Γ ℓ A} → Tm Γ ℓ A → Γ ⇒ cons Γ ℓ A
-⟨ a ⟩ γ = (γ , a γ)
 
 _[_]ᴸ : ∀ {Γ Δ} → Lvl Δ → Γ ⇒ Δ → Lvl Γ
 (ℓ [ σ ]ᴸ) γ = ℓ (σ γ)
@@ -119,6 +114,30 @@ _[_]ᵀ : ∀ {Γ Δ} {ℓ : Lvl Δ} → Ty Δ ℓ → (σ : Γ ⇒ Δ) → Ty �
 
 _[_]ᵗ : ∀ {Γ Δ} {ℓ : Lvl Δ} {A : Ty Δ ℓ} → Tm Δ ℓ A → (σ : Γ ⇒ Δ) → Tm Γ (ℓ [ σ ]ᴸ) (A [ σ ]ᵀ)
 (a [ σ ]ᵗ) γ = a (σ γ)
+
+wkᴸ : ∀ {Γ k} (A : Ty Γ k) → Lvl Γ → Lvl (cons Γ k A)
+wkᴸ A ℓ (γ , _) = ℓ γ
+
+wkᵀ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl Γ} → Ty Γ ℓ → Ty (cons Γ k A) (wkᴸ A ℓ)
+wkᵀ A B (γ , _) = B γ
+
+wkᵗ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl Γ} {B : Ty Γ ℓ} → Tm Γ ℓ B → Tm (cons Γ k A) (wkᴸ A ℓ) (wkᵀ A B)
+wkᵗ A a (γ , _) = a γ
+
+var : ∀ {Γ k} (A : Ty Γ k) → Tm (cons Γ k A) (wkᴸ A k) (wkᵀ A A)
+var A (_ , a) = a
+
+substᴸ : ∀ {Γ k} (A : Ty Γ k) → Lvl (cons Γ k A) → (a : Tm Γ k A) → Lvl Γ
+substᴸ A ℓ a γ = ℓ (γ , a γ)
+syntax substᴸ A ℓ a = ℓ ⟨ a ∈ A ⟩ᴸ
+
+substᵀ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl (cons Γ k A)} → Ty (cons Γ k A) ℓ → (a : Tm Γ k A) → Ty Γ (ℓ ⟨ a ∈ A ⟩ᴸ)
+substᵀ A B a γ = B (γ , a γ)
+syntax substᵀ A B a = B ⟨ a ∈ A ⟩ᵀ
+
+substᵗ : ∀ {Γ k} (A : Ty Γ k) {ℓ : Lvl (cons Γ k A)} (B : Ty (cons Γ k A) ℓ) → Tm (cons Γ k A) ℓ B → (a : Tm Γ k A) → Tm Γ (ℓ ⟨ a ∈ A ⟩ᴸ) (B ⟨ a ∈ A ⟩ᵀ)
+substᵗ A B b a γ = b (γ , a γ)
+syntax substᵗ A B b a = b ∈ B ⟨ a ∈ A ⟩ᵗ
 
 {--------------
   Level rules
@@ -187,13 +206,18 @@ absurd A b γ with () ← b γ
   Function rules
 -----------------}
 
-Pi : ∀ {Γ k} → (A : Ty Γ k) → Ty (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ) → Ty Γ k
+Pi : ∀ {Γ} {k : Lvl Γ} → (A : Ty Γ k) → Ty (cons Γ k A) (wkᴸ A k) → Ty Γ k
 Pi A B γ = Π̂ (A γ) (λ a → B (γ , a))
 
-lam : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ)) →
-  Tm (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ) B → Tm Γ k (Pi A B)
+lam : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
+  Tm (cons Γ k A) (wkᴸ A k) B → Tm Γ k (Pi A B)
 lam A B b γ a = b (γ , a)
 
-app : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (k [ wk {Γ} {k} {A} ]ᴸ)) →
-  Tm Γ k (Pi A B) → (a : Tm Γ k A) → Tm Γ k (B [ ⟨ a ⟩ ]ᵀ)
+app : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k)) →
+  Tm Γ k (Pi A B) → (a : Tm Γ k A) → Tm Γ k (B ⟨ a ∈ A ⟩ᵀ)
 app A B b a γ = b γ (a γ)
+
+β : ∀ {Γ k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ A k))
+  (a : Tm Γ k A) (b : Tm (cons Γ k A) (wkᴸ A k) B) →
+  app A B (lam A B b) a ≡ b ∈ B ⟨ a ∈ A ⟩ᵗ
+β A B a b = refl
