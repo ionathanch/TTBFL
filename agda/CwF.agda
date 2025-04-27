@@ -39,12 +39,12 @@ U k = U' k (U< (wf k))
 el : ∀ k → U k → Set
 el k = el' k (U< (wf k))
 
-{------------------------------------------------
+{--------------------------------------------------
   Some important properties:
   * Universes irrelevant in Acc
   * Universes can be lifted to higher levels
   * Interpretations of lifted universes unchanged
-------------------------------------------------}
+--------------------------------------------------}
 
 U≡ : ∀ {j k} (acck : Acc k) (j<k : j < k) → U j ≡ U< acck j<k
 U≡ {j} {k} acck j<k i
