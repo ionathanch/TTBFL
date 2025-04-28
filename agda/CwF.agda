@@ -223,6 +223,12 @@ Bot γ = ⊥̂
 absurd : ∀ {k ℓ} (A : Ty Γ k) → Tm Γ ℓ Bot → Tm Γ k A
 absurd A b γ with () ← b γ
 
+-- η for the empty type
+η⊥ : ∀ {ℓ} → let Γ' = cons Γ ℓ Bot in
+     ∀ {k A} (a : Tm Γ' k A) (b : Tm Γ ℓ Bot) →
+     absurd (A [ ⟨ b ⟩ ]ᵀ) b ≡ a [ ⟨ b ⟩ ]ᵗ
+η⊥ {Γ} _ b _ γ with () ← b γ
+
 {-----------------
   Function rules
 -----------------}
@@ -242,15 +248,15 @@ app : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ k)) →
 app A B b a γ = b γ (a γ)
 
 -- rule E-Beta
-β : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ k))
+βΠ : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ k))
   (a : Tm Γ k A) (b : Tm (cons Γ k A) (wkᴸ k) B) →
   app A B (lam A B b) a ≡ b [ ⟨ a ⟩ ]ᵗ
-β A B a b = refl
+βΠ A B a b = refl
 
 -- rule E-Eta
-η : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ k)) (b : Tm Γ k (Pi A B)) →
+ηΠ : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ k)) (b : Tm Γ k (Pi A B)) →
   lam A B (app (wkᵀ A) (wkᵀ₂ B) (wkᵗ b) var) ≡ b
-η A B b = refl
+ηΠ A B b = refl
 
 {--------------------------------------------------
   Every level k an inconsistent context Γ = x : ⊥
