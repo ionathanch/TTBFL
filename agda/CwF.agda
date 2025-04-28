@@ -4,6 +4,7 @@ import Acc
 open import Data.Empty
 open import Data.Unit
 open import Data.Product.Base using (∃-syntax)
+open import Function.Base
 open import Cubical.Foundations.Prelude hiding (lift)
 
 module CwF
@@ -117,19 +118,32 @@ _[_]ᵀ : ∀ {Γ Δ} {ℓ : Lvl Δ} → Ty Δ ℓ → (σ : Γ ⇒ Δ) → Ty �
 _[_]ᵗ : ∀ {Γ Δ} {ℓ : Lvl Δ} {A : Ty Δ ℓ} → Tm Δ ℓ A → (σ : Γ ⇒ Δ) → Tm Γ (ℓ [ σ ]ᴸ) (A [ σ ]ᵀ)
 (a [ σ ]ᵗ) γ = a (σ γ)
 
+_↑_ : ∀ {Γ Δ ℓ A} (σ : Γ ⇒ Δ) → Tm Γ (ℓ [ σ ]ᴸ) (A [ σ ]ᵀ) → Γ ⇒ cons Δ ℓ A
+(σ ↑ a) γ = σ γ , a γ
+
 variable Γ : Ctxt
 
 ⟨_⟩ : ∀ {ℓ A} → Tm Γ ℓ A → Γ ⇒ cons Γ ℓ A
-⟨ a ⟩ γ = γ , a γ
+⟨ a ⟩ = id ↑ a
+
+wk : ∀ {ℓ A} → cons Γ ℓ A ⇒ Γ
+wk = fst
 
 wkᴸ : ∀ {ℓ A} → Lvl Γ → Lvl (cons Γ ℓ A)
-wkᴸ k = k [ fst ]ᴸ
+wkᴸ k = k [ wk ]ᴸ
 
 wkᵀ : ∀ {ℓ A k} → Ty Γ k → Ty (cons Γ ℓ A) (wkᴸ k)
-wkᵀ A = A [ fst ]ᵀ
+wkᵀ A = A [ wk ]ᵀ
+
+wkᵗ : ∀ {ℓ A k B} → Tm Γ k B → Tm (cons Γ ℓ A) (wkᴸ k) (wkᵀ B)
+wkᵗ b = b [ wk ]ᵗ
 
 var : ∀ {ℓ A} → Tm (cons Γ ℓ A) (wkᴸ ℓ) (wkᵀ A)
-var (_ , a) = a
+var = snd
+
+wkᵀ₂ : ∀ {ℓ ℓ' A B k} → Ty (cons Γ ℓ A) (wkᴸ k) →
+  Ty (cons (cons Γ ℓ' B) (wkᴸ ℓ) (wkᵀ A)) (wkᴸ (wkᴸ k))
+wkᵀ₂ A = A [ (wk ∘ wk) ↑ var ]ᵀ
 
 {--------------
   Level rules
@@ -232,6 +246,11 @@ app A B b a γ = b γ (a γ)
   (a : Tm Γ k A) (b : Tm (cons Γ k A) (wkᴸ k) B) →
   app A B (lam A B b) a ≡ b [ ⟨ a ⟩ ]ᵗ
 β A B a b = refl
+
+-- rule E-Eta
+η : ∀ {k} (A : Ty Γ k) (B : Ty (cons Γ k A) (wkᴸ k)) (b : Tm Γ k (Pi A B)) →
+  lam A B (app (wkᵀ A) (wkᵀ₂ B) (wkᵗ b) var) ≡ b
+η A B b = refl
 
 {--------------------------------------------------
   Every level k an inconsistent context Γ = x : ⊥
