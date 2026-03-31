@@ -1,5 +1,5 @@
 import Mathlib.Order.RelClasses
-import Mathlib.Order.BoundedOrder
+import Mathlib.Order.BoundedOrder.Basic
 
 set_option autoImplicit false
 set_option pp.fieldNotation false
@@ -35,4 +35,10 @@ instance instNoMaxOrderNat : NoMaxOrder Nat where
 @[simp]
 instance : LevelClass where
   L := Nat
-  lc := { bot := 0, bot_le := λ _ ↦ by simp }
+  lc := {
+    bot := 0,
+    bot_le := λ _ ↦ by simp,
+    le_refl := λ _ ↦ Nat.le.refl,
+    le_trans := λ _ _ _ ↦ Nat.le_trans,
+    lt_iff_le_not_ge := by omega
+  }

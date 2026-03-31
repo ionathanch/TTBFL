@@ -319,4 +319,4 @@ theorem wRenameLift {ξ : ℕ → ℕ} {Γ Δ A}
   intro x B mem
   cases mem with
   | here => apply inHere; simp [renameComp]; rfl
-  | there => apply inThere; apply_rules [h]; simp [h, renameComp]; rfl
+  | there => apply inThere; apply_rules [h]; simp [renameComp]; rfl
