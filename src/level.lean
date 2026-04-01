@@ -23,7 +23,7 @@ class LevelClass where
   L : Type
   lc : LevelClasses L
 
-attribute [instance] LevelClass.lc
+attribute [implicit_reducible, instance] LevelClass.lc
 
 /-*---------------------------------
   The naturals are suitable levels
