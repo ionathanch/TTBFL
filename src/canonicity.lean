@@ -4,9 +4,6 @@ import «src».normalization
 open Term
 open Nat
 
-set_option autoImplicit false
-set_option pp.fieldNotation false
-
 variable [lc : LevelClass]
 
 -- Normal forms do not reduce

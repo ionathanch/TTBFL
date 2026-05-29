@@ -3,9 +3,6 @@ import «src».semantics
 
 open Term
 
-set_option autoImplicit false
-set_option pp.fieldNotation false
-
 variable [lc : LevelClass]
 
 theorem soundness {Γ} {a A : Term} (h : Γ ⊢ a ∶ A) : Γ ⊨ a ∶ A := by

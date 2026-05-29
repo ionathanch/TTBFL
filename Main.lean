@@ -4,11 +4,11 @@ import «src».reduction
 import «src».normal
 import «src».typing
 import «src».safety
-import «src».candidates
-import «src».normalization
-import «src».canonicity
--- import «src».semantics
--- import «src».soundness
+import «src».semantics
+import «src».soundness
+-- import «src».candidates
+-- import «src».normalization
+-- import «src».canonicity
 -- import «src».example
 
 def main : IO Unit :=

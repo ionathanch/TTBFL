@@ -314,7 +314,7 @@ theorem interpsDet' {i a P Q} (hP : ⟦ a ⟧ i ↘ P) (hQ : ⟦ a ⟧ i ↘ Q) 
 
 -- this is the only place we need trichotomy of <
 theorem interpsDet {i j a P Q} (hP : ⟦ a ⟧ i ↘ P) (hQ : ⟦ a ⟧ j ↘ Q) : P = Q := by
-  rcases trichotomous (r := lc.lt.lt) i j with lt | eq | gt
+  rcases trichotomous (r := lc.lc.lt) i j with lt | eq | gt
   . sorry -- exact interpsDet' (interpsCumul lt hP) hQ
   . rw [eq] at hP; apply interpsDet' hP hQ
   . sorry -- exact interpsDet' hP (interpsCumul gt hQ)

@@ -2,9 +2,6 @@ import «src».normal
 
 open Term
 
-set_option autoImplicit false
-set_option pp.fieldNotation false
-
 variable [lc : LevelClass]
 
 inductive Interp (i : lc.L) (I : ∀ j, j < i → Term → Prop) : Term → (Term → Prop) → Prop where
@@ -288,7 +285,7 @@ theorem interpsCumul {i j a P} (lt : i < j) (h : ⟦ a ⟧ i ↘ P) : ⟦ a ⟧ 
 
 -- this is the only place we need trichotomy of <
 theorem interpsDet {i j a P Q} (hP : ⟦ a ⟧ i ↘ P) (hQ : ⟦ a ⟧ j ↘ Q) : P = Q := by
-  rcases trichotomous (r := lc.lt.lt) i j with lt | eq | gt
+  rcases trichotomous (r := lc.lc.lt) i j with lt | eq | gt
   . exact interpsDet' (interpsCumul lt hP) hQ
   . rw [eq] at hP; apply interpsDet' hP hQ
   . exact interpsDet' hP (interpsCumul gt hQ)

@@ -4,9 +4,6 @@ import «src».candidates
 open Term
 open Nat
 
-set_option autoImplicit false
-set_option pp.fieldNotation false
-
 variable [lc : LevelClass]
 
 /-*------------------------------

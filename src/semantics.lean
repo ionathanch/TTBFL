@@ -2,9 +2,6 @@ import «src».reduction
 
 open Term
 
-set_option autoImplicit false
-set_option pp.fieldNotation false
-
 variable [lc : LevelClass]
 
 inductive Interp (i : lc.L) (I : ∀ j, j < i → Term → Prop) : Term → (Term → Prop) → Prop where

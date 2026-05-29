@@ -3,9 +3,6 @@ import «src».syntactics
 open Nat
 open Term
 
-set_option autoImplicit false
-set_option pp.fieldNotation false
-
 variable [lc : LevelClass]
 variable [teq : BEq Term]
 

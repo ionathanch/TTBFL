@@ -1,9 +1,6 @@
 import Mathlib.Order.RelClasses
 import Mathlib.Order.BoundedOrder.Basic
 
-set_option autoImplicit false
-set_option pp.fieldNotation false
-
 /-*----------------------------------------------------------
   Typeclass for levels and their required properties:
   * Wellfoundedness is needed to build the logical relation
@@ -32,8 +29,8 @@ attribute [implicit_reducible, instance] LevelClass.lc
 instance instNoMaxOrderNat : NoMaxOrder Nat where
   exists_gt := λ i ↦ ⟨Nat.succ i, by omega⟩
 
-@[simp]
-instance : LevelClass where
+@[implicit_reducible]
+instance NatLevel : LevelClass where
   L := Nat
   lc := {
     bot := 0,
@@ -42,3 +39,7 @@ instance : LevelClass where
     le_trans := λ _ _ _ ↦ Nat.le_trans,
     lt_iff_le_not_ge := by omega
   }
+
+@[implicit_reducible]
+instance {n} : OfNat NatLevel.L n where
+  ofNat := n
