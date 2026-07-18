@@ -175,6 +175,7 @@ end
 notation:40 "⊢" Γ:40 => Wf Γ
 notation:40 Γ:41 "⊢" a:41 "∶" A:41 => Wt Γ a A
 
+set_option linter.defProp false in
 @[induction_eliminator]
 def wtInd {motive} :=
   @Wt.rec _ (λ _ _ ↦ True) motive (by simp) (by simp)

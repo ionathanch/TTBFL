@@ -202,16 +202,16 @@ theorem substComp' ρ σ τ (h : ∀ x, (subst ρ ∘ σ) x = τ x) : ∀ s, (su
   Substitution & renaming lemmas, extensionally
 ----------------------------------------------*-/
 
-def substId : ∀ s, subst var s = s :=
+theorem substId : ∀ s, subst var s = s :=
   substId' var (by simp)
 
-def substRename ξ σ : ∀ s, subst σ (rename ξ s) = subst (σ ∘ ξ) s :=
+theorem substRename ξ σ : ∀ s, subst σ (rename ξ s) = subst (σ ∘ ξ) s :=
   substRename' _ _ (σ ∘ ξ) (by simp)
 
-def renameSubst ξ σ : ∀ s, rename ξ (subst σ s) = subst (rename ξ ∘ σ) s :=
+theorem renameSubst ξ σ : ∀ s, rename ξ (subst σ s) = subst (rename ξ ∘ σ) s :=
   renameSubst' _ _ (rename ξ ∘ σ) (by simp)
 
-def substComp σ τ : ∀ s, (subst σ ∘ subst τ) s = subst (subst σ ∘ τ) s :=
+theorem substComp σ τ : ∀ s, (subst σ ∘ subst τ) s = subst (subst σ ∘ τ) s :=
   substComp' _ _ (subst σ ∘ τ) (by simp)
 
 -- A renaming embeds into a substitution by

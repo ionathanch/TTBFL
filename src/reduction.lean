@@ -99,23 +99,23 @@ theorem antirenaming {ξ a b'} (r : rename ξ a ⇒ b') : ∃ b, b' = rename ξ 
     let ⟨a, e, r⟩ := ih
     subst e
     exact ⟨𝒰 a, rfl, Par.𝒰 r⟩
-  case pi iha ihb =>
+  case pi iha _ ihb =>
     let ⟨a, ea, ra⟩ := iha
     let ⟨b, eb, rb⟩ := ihb
     subst ea; subst eb
     exact ⟨pi a b, rfl, Par.pi ra rb⟩
-  case abs iha ihb =>
+  case abs iha _ ihb =>
     let ⟨a, ea, ra⟩ := iha
     let ⟨b, eb, rb⟩ := ihb
     subst ea; subst eb
     exact ⟨abs a b, rfl, Par.abs ra rb⟩
-  case app ihb iha =>
+  case app ihb _ iha =>
     let ⟨a, ea, ra⟩ := iha
     let ⟨b, eb, rb⟩ := ihb
     subst ea; subst eb
     exact ⟨app b a, rfl, Par.app rb ra⟩
   case mty => exact ⟨mty, rfl, Par.mty⟩
-  case exf iha ihb =>
+  case exf iha _ ihb =>
     let ⟨a, ea, ra⟩ := iha
     let ⟨b, eb, rb⟩ := ihb
     subst ea; subst eb
