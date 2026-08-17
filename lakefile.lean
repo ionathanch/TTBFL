@@ -11,7 +11,7 @@ lean_lib src where
     ⟨`pp.proofs, true⟩
   ]
 
-require "leanprover-community" / "mathlib" @ git "v4.32.0"
+require "leanprover-community" / "mathlib" @ git "v4.33.0"
 
 @[default_target]
 lean_exe «bfcul» where
